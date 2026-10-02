@@ -1,0 +1,84 @@
+@startuml secgrow
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor #FBFB77
+skinparam noteBorderColor #A80036
+skinparam sequenceArrowThickness 1.3
+skinparam sequenceLifeLineBorderColor #A80036
+skinparam sequenceLifeLineBackgroundColor #FEFECE
+skinparam sequenceParticipantBackgroundColor #DDEEFF
+skinparam sequenceParticipantBorderColor #A80036
+skinparam actorBackgroundColor #EEFFEE
+skinparam actorBorderColor #A80036
+skinparam sequenceGroupBorderColor #A80036
+skinparam sequenceGroupBackgroundColor #F8F8F8
+
+title grow() — Diagrama de secuencia\nEjemplo: hay 2 bloques, se añade el tercero
+
+actor "add(i, x)" as ADD
+participant "RootishArrayStack" as RAS
+participant "blocks\n(ArrayStack<T*>)" as BLK
+participant "array<T*>" as ARR
+participant "Sistema\n(new T[])" as SYS
+
+ADD -> RAS : grow()
+activate RAS
+
+note right of RAS
+  blocks.size() = 2
+  nuevo tamaño = 2 + 1 = 3
+end note
+
+RAS -> SYS : new T[3]
+activate SYS
+note right of SYS
+  Reserva 3 elementos de tipo T
+  en memoria dinámica.
+  Devuelve un T* al inicio.
+end note
+SYS --> RAS : T* nuevo_bloque
+deactivate SYS
+
+note right of RAS
+  Se obtiene el puntero
+  al nuevo bloque.
+end note
+
+RAS -> BLK : add(blocks.size(), nuevo_bloque)
+activate BLK
+note right of BLK
+  blocks.size() = 2
+  Se inserta en la posición 2
+  (al final).
+end note
+
+BLK -> ARR : a[2] = nuevo_bloque
+activate ARR
+note right of ARR
+  Asignación en el arreglo
+  interno de punteros.
+end note
+ARR --> BLK : ok
+deactivate ARR
+
+alt ArrayStack necesita crecer
+  note right of BLK
+    Si n+1 > a.length,
+    ArrayStack llama a resize()
+    y duplica la capacidad.
+  end note
+  BLK -> BLK : resize()
+end
+
+BLK --> RAS : puntero insertado
+deactivate BLK
+
+note right of RAS
+  blocks.size() ahora es 3.
+  Capacidad total:
+  1 + 2 + 3 = 6
+end note
+
+RAS --> ADD : fin de grow()
+deactivate RAS
+
+@enduml

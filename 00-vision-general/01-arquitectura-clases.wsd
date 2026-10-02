@@ -1,0 +1,85 @@
+@startuml Arquitectura
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam classBackgroundColor #FEFECE
+skinparam classBorderColor #A80036
+skinparam noteBackgroundColor #FBFB77
+skinparam noteBorderColor #A80036
+
+title Arquitectura general - Open Data Structures (C++)\nRootishArrayStack y sus dependencias
+
+package "array.h" #DDEEFF {
+    class "array<T>" as Array {
+        - T *a
+        + int length
+        --
+        + array(int len)
+        + array(int len, T init)
+        + T& operator[](int i)
+        + T* operator+(int i)
+        + void swap(int i, int j)
+        + void reverse()
+        + static void copyOfRange(...)
+        + void fill(T x)
+    }
+}
+
+package "ArrayStack.h" #DDEEFF {
+    class "ArrayStack<T>" as ArrayStack {
+        # array<T> a
+        # int n
+        --
+        + int size()
+        + T get(int i)
+        + T set(int i, T x)
+        + void add(int i, T x)
+        + void add(T x)
+        + T remove(int i)
+        + void clear()
+        # void resize()
+    }
+}
+
+package "RootishArrayStack.h" #FFEEDD {
+    class "RootishArrayStack<T>" as RAS {
+        # ArrayStack<T*> blocks
+        # int n
+        --
+        + int size()
+        + T get(int i)
+        + T set(int i, T x)
+        + void add(int i, T x)
+        + T remove(int i)
+        + void clear()
+        # int i2b(int i)
+        # void grow()
+        # void shrink()
+    }
+}
+
+package "utils.h" #EEFFEE {
+    class "utils" as Utils <<namespace>> {
+        + T min(T a, T b)
+        + T max(T a, T b)
+        + int compare(T& x, T& y)
+        + bool equals(T& x, T& y)
+    }
+}
+
+ArrayStack *-- Array : contiene 1
+RAS *-- ArrayStack : contiene 1\n(blocks)
+ArrayStack ..> Utils : usa max()
+
+note right of RAS
+  n         = elementos almacenados
+  blocks    = ArrayStack de punteros T*
+  bloque b  = tamaño b+1
+  capacidad = r(r+1)/2
+end note
+
+note bottom of Array
+  operator[] hace el acceso real
+  con assert(i >= 0 && i < length)
+end note
+
+@enduml

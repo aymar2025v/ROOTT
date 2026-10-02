@@ -1,0 +1,48 @@
+@startuml setsec
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor #FBFB77
+skinparam noteBorderColor #A80036
+
+title set(4, 999) — Diagrama de secuencia
+
+actor Usuario
+participant "RootishArrayStack" as RAS
+participant "i2b" as I2B
+participant "blocks (ArrayStack<T*>)" as BLK
+participant "array<T*>" as ARR
+
+Usuario -> RAS : set(4, 999)
+activate RAS
+
+RAS -> I2B : i2b(4)
+activate I2B
+I2B --> RAS : b = 2
+deactivate I2B
+
+note right of RAS
+  j = 4 − 2·3/2 = 1
+end note
+
+RAS -> BLK : get(2)
+activate BLK
+BLK -> ARR : a[2]
+activate ARR
+ARR --> BLK : T* al bloque 2
+deactivate ARR
+BLK --> RAS : T* al bloque 2
+deactivate BLK
+
+note right of RAS
+  y = blocks.get(2)[1]
+  y = 50
+end note
+
+note right of RAS
+  blocks.get(2)[1] = 999
+  *(ptr + 1) = 999
+end note
+
+RAS --> Usuario : 50
+deactivate RAS
+
+@enduml

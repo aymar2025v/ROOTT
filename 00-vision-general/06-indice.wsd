@@ -1,0 +1,75 @@
+@startuml in
+skinparam componentStyle rectangle
+skinparam componentBackgroundColor #FEFECE
+skinparam componentBorderColor #A80036
+skinparam packageStyle rectangle
+skinparam packageBorderColor #555555
+
+title Índice de diagramas — RootishArrayStack
+
+package "00. Visión general" #FAFAFA {
+    component "01. Arquitectura de clases" as D01
+    component "02. Mapa de llamadas" as D02
+    component "03. Dependencias entre archivos" as D03
+    component "04. Mapa global" as D04
+    component "05. Flujo completo" as D05
+    component "06. Índice (este)" as D06
+}
+
+package "01. Métodos" #E1F5FE {
+    component "01. size()" as M01
+    component "02. i2b(i)" as M02
+    component "03. get(i)" as M03
+    component "04. set(i, x)" as M04
+    component "05. Constructor" as M05
+    component "06. grow()" as M06
+    component "07. shrink()" as M07
+    component "08. add(i, x)" as M08
+    component "09. remove(i)" as M09
+    component "10. clear()" as M10
+    component "11. Destructor" as M11
+}
+
+package "02. Interacciones" #E0F2F1 {
+    component "01. add → grow → set/get" as I01
+    component "02. remove → shrink → set/get" as I02
+    component "03. Destructor → clear" as I03
+    component "04. get/set → i2b → blocks.get" as I04
+}
+
+package "03. Estados" #EDE7F6 {
+    component "01. Estado inicial" as E01
+    component "02. Tras add" as E02
+    component "03. Tras remove" as E03
+    component "04. Tras clear" as E04
+}
+
+D01 --> D02
+D02 --> D03
+D03 --> D04
+D04 --> D05
+D05 --> D06
+
+D04 --> M01
+D04 --> M02
+D04 --> M03
+D04 --> M04
+D04 --> M05
+D04 --> M06
+D04 --> M07
+D04 --> M08
+D04 --> M09
+D04 --> M10
+D04 --> M11
+
+D04 --> I01
+D04 --> I02
+D04 --> I03
+D04 --> I04
+
+D04 --> E01
+D04 --> E02
+D04 --> E03
+D04 --> E04
+
+@enduml

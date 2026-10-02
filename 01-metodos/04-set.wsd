@@ -1,0 +1,116 @@
+@startuml set
+skinparam activityBackgroundColor #FEFECE
+skinparam activityBorderColor #A80036
+skinparam activityDiamondBackgroundColor #FFEEDD
+skinparam activityDiamondBorderColor #A80036
+skinparam noteBackgroundColor #FBFB77
+skinparam noteBorderColor #A80036
+skinparam arrowColor #A80036
+skinparam partitionBorderColor #A80036
+skinparam partitionBackgroundColor #F8F8F8
+
+title set(i, x) — Reemplazar el elemento en la posición i\nO(1) — modifica un elemento del bloque
+
+floating note left
+  **Diferencia con get**
+  get  → solo lee y devuelve
+  set  → lee, escribe y devuelve
+         el valor anterior
+
+  set NO cambia n ni la
+  cantidad de bloques.
+  Solo cambia el contenido
+  de una posición.
+end note
+
+start
+
+partition "Entrada" {
+  :Recibe i (índice lógico);
+  :Recibe x (nuevo valor, por copia);
+  note right
+    Condición: 0 ≤ i < n
+    set modifica el bloque,
+    pero no n ni blocks.
+  end note
+}
+
+partition "Paso 1: localizar el bloque" {
+  :b = i2b(i);
+  note right
+    Igual que en get.
+    Fórmula cuadrática:
+    b = ceil( (−3 + √(9 + 8i)) / 2 )
+  end note
+}
+
+partition "Paso 2: calcular posición dentro del bloque" {
+  :j = i − b(b+1)/2;
+  note right
+    b(b+1)/2 = elementos en
+    bloques anteriores.
+
+    j = desplazamiento dentro
+    del bloque b.
+  end note
+}
+
+partition "Paso 3: guardar el valor viejo" {
+  :y = blocks.get(b)[j];
+  note right
+    Se lee el elemento actual
+    y se copia en y.
+
+    **Importante**: hay que
+    guardarlo ANTES de
+    sobrescribir, porque
+    después ya no se puede
+    recuperar.
+  end note
+}
+
+partition "Paso 4: escribir el nuevo valor" {
+  :blocks.get(b)[j] = x;
+  note right
+    blocks.get(b) devuelve T*
+    [j] es *(ptr + j), un T&
+
+    Se escribe x en esa
+    posición de memoria.
+
+    **Aquí SÍ se modifica
+    el contenido del bloque.**
+  end note
+}
+
+partition "Salida" {
+  :return y;
+  note right
+    Devuelve el valor anterior,
+    igual que ArrayStack::set.
+  end note
+}
+
+stop
+
+floating note right
+  **Estado inicial**
+  i = índice a modificar
+  x = valor nuevo
+  bloque b[j] = valor viejo
+  n, blocks sin cambios
+
+  **Estado final**
+  bloque b[j] = x
+  n, blocks sin cambios
+  Se devuelve el valor viejo
+
+  **Complejidad:** O(1)
+
+  **¿Puede ser const?**
+  NO. Modifica el contenido
+  del bloque apuntado por
+  blocks.get(b).
+end note
+
+@enduml

@@ -1,0 +1,114 @@
+@startuml addsec
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam sequenceArrowThickness 1.3
+skinparam sequenceLifeLineBorderColor #2E7D32
+skinparam sequenceLifeLineBackgroundColor #E8F5E9
+skinparam sequenceParticipantBackgroundColor #B2DFDB
+skinparam sequenceParticipantBorderColor #00695C
+skinparam actorBackgroundColor #C8E6C9
+skinparam actorBorderColor #2E7D32
+skinparam sequenceGroupBorderColor #2E7D32
+skinparam sequenceGroupBackgroundColor #F1F8E9
+
+title add(i, x) — Diagrama de secuencia\nEjemplo: n = 5, i = 2, x = 99, r = 3 bloques
+
+actor "Usuario" as USR
+participant "RootishArrayStack" as RAS
+participant "blocks\n(ArrayStack<T*>)" as BLK
+participant "i2b" as I2B
+participant "Sistema\n(new/delete)" as SYS
+
+USR -> RAS : add(2, 99)
+activate RAS
+
+note right of RAS
+  r = blocks.size() = 3
+  Capacidad = 3·4/2 = 6
+  n + 1 = 6
+  6 < 6 → false
+  No hace falta grow()
+end note
+
+group Si faltara capacidad
+  RAS -> RAS : grow()
+  RAS -> SYS : new T[r+1]
+  SYS --> RAS : T* nuevo_bloque
+  RAS -> BLK : add(blocks.size(), nuevo_bloque)
+  note right of BLK
+    Se añade al final.
+  end note
+end
+
+RAS -> RAS : n++
+note right of RAS
+  n pasa de 5 a 6.
+  El nuevo último índice
+  es 5, aún sin valor final.
+end note
+
+group Bucle de desplazamiento (j de 5 a 3)
+  loop j = n−1 = 5; j > i = 2; j−−
+
+    RAS -> RAS : set(j, get(j − 1))
+    activate RAS
+    note right of RAS
+      Dos llamadas anidadas:
+      1. get(j−1) lee el vecino izq.
+      2. set(j, ...) escribe en j.
+    end note
+
+    RAS -> I2B : i2b(j)
+    activate I2B
+    I2B --> RAS : b
+    deactivate I2B
+
+    RAS -> BLK : get(b)
+    activate BLK
+    BLK --> RAS : T* al bloque
+    deactivate BLK
+
+    note right of RAS
+      set(j, get(j−1))
+      desplaza el dato una
+      posición a la derecha.
+    end note
+    deactivate RAS
+
+  end
+end
+
+note right of RAS
+  Después del bucle:
+  hueco en la posición i = 2.
+end note
+
+RAS -> RAS : set(2, 99)
+activate RAS
+note right of RAS
+  set usa i2b(2) → b
+  y escribe 99 en la
+  posición j dentro
+  del bloque.
+end note
+
+RAS -> I2B : i2b(2)
+activate I2B
+I2B --> RAS : b
+deactivate I2B
+
+RAS -> BLK : get(b)
+activate BLK
+BLK --> RAS : T* al bloque
+deactivate BLK
+
+note right of RAS
+  *(ptr + j) = 99
+end note
+deactivate RAS
+
+RAS --> USR : void
+deactivate RAS
+
+@enduml

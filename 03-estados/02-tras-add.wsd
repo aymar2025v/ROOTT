@@ -1,0 +1,42 @@
+@startuml aa
+skinparam stateBackgroundColor #E0F2F1
+skinparam stateBorderColor #00695C
+skinparam arrowColor #00695C
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+
+title add(1, 99) — Estado antes y después\nn = 3, r = 2 → n = 4, r = 3
+
+state "Antes" as ANTES {
+  ANTES : n = 3
+  ANTES : blocks.size() = 2
+  ANTES : Capacidad = 3
+  ANTES : Bloque 0: [10]
+  ANTES : Bloque 1: [20, 30]
+}
+
+state "Después" as DESPUES {
+  DESPUES : n = 4
+  DESPUES : blocks.size() = 3
+  DESPUES : Capacidad = 6
+  DESPUES : Bloque 0: [10]
+  DESPUES : Bloque 1: [20, 99]
+  DESPUES : Bloque 2: [30, ?, ?]
+}
+
+ANTES --> DESPUES : add(1, 99)
+
+note bottom of ANTES
+  2·3/2 = 3 = n
+  Capacidad justa.
+end note
+
+note bottom of DESPUES
+  Se llamó a grow() porque
+  3 < n+1 = 4.
+  El bloque 2 tiene tamaño 3.
+  El 30 se desplazó a la
+  posición 3 del bloque 2.
+end note
+
+@enduml

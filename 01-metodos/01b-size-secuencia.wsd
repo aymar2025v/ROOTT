@@ -1,0 +1,38 @@
+@startuml sizesec
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam sequenceArrowThickness 1.3
+skinparam sequenceLifeLineBorderColor #01579B
+skinparam sequenceLifeLineBackgroundColor #E1F5FE
+skinparam sequenceParticipantBackgroundColor #B3E5FC
+skinparam sequenceParticipantBorderColor #01579B
+skinparam actorBackgroundColor #E1F5FE
+skinparam actorBorderColor #01579B
+
+title size() — Diagrama de secuencia\nO(1) — solo lee n
+
+actor "Usuario" as USR
+participant "RootishArrayStack" as RAS
+
+USR -> RAS : size()
+activate RAS
+
+note right of RAS
+  n = 6
+  blocks.size() = 3
+
+  size() NO toca blocks.
+  Solo lee n.
+end note
+
+RAS --> USR : 6
+deactivate RAS
+
+note right of USR
+  El usuario recibe el
+  número de elementos,
+  no el número de bloques.
+end note
+
+@enduml

@@ -1,0 +1,107 @@
+@startuml gettt
+skinparam activityBackgroundColor #FEFECE
+skinparam activityBorderColor #A80036
+skinparam activityDiamondBackgroundColor #FFEEDD
+skinparam activityDiamondBorderColor #A80036
+skinparam noteBackgroundColor #FBFB77
+skinparam noteBorderColor #A80036
+skinparam arrowColor #A80036
+skinparam partitionBorderColor #A80036
+skinparam partitionBackgroundColor #F8F8F8
+
+title get(i) — Devolver el elemento en la posición i\nO(1) — no modifica la estructura
+
+floating note left
+  **Recordatorio**
+  Los bloques tienen tamaños 1, 2, 3, ...
+  Bloque b contiene índices:
+    inicio = b(b+1)/2
+    fin    = (b+1)(b+2)/2 − 1
+
+  get usa **i2b** para hallar b
+  y luego calcula j dentro del bloque.
+end note
+
+start
+
+partition "Entrada" {
+  :Recibe i (índice lógico);
+  note right
+    Condición: 0 ≤ i < n
+    get NO modifica n, blocks
+    ni los datos.
+  end note
+}
+
+partition "Paso 1: localizar el bloque" {
+  :b = i2b(i);
+  note right
+    Usa la fórmula cuadrática:
+    b = ceil( (−3 + √(9 + 8i)) / 2 )
+
+    Es O(1).
+  end note
+}
+
+partition "Paso 2: calcular posición dentro del bloque" {
+  :j = i − b(b+1)/2;
+  note right
+    b(b+1)/2 = elementos en
+    todos los bloques anteriores
+    al bloque b.
+
+    Entonces j es el desplazamiento
+    dentro del bloque b.
+
+    Ejemplo: i = 4, b = 2
+    j = 4 − 2·3/2 = 4 − 3 = 1
+  end note
+}
+
+partition "Paso 3: acceder al elemento" {
+  :Obtener puntero al bloque b;
+  note right
+    blocks.get(b)
+    devuelve un T* (puntero al
+    primer elemento del bloque b).
+  end note
+
+  :Aplicar aritmética de punteros;
+  note right
+    blocks.get(b)[j]
+    ≡ *(blocks.get(b) + j)
+
+    Suma j·sizeof(T) bytes
+    y desreferencia.
+  end note
+
+  :Devolver copia del elemento T;
+  note right
+    get devuelve T por valor,
+    así que se copia el dato.
+  end note
+}
+
+partition "Salida" {
+  :return elemento en la posición i;
+}
+
+stop
+
+floating note right
+  **Estado inicial**
+  i = valor de entrada
+  n = tamaño actual
+  blocks con r bloques
+
+  **Estado final**
+  Igual que al inicio.
+  get no modifica nada.
+
+  **Complejidad:** O(1)
+  i2b: O(1)
+  blocks.get: O(1)
+  [j]: O(1)
+end note
+
+@enduml

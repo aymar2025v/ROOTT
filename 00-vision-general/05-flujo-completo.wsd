@@ -1,0 +1,64 @@
+@startuml ff
+skinparam activityBackgroundColor #FEFECE
+skinparam activityBorderColor #A80036
+skinparam activityDiamondBackgroundColor #FFEEDD
+skinparam activityDiamondBorderColor #A80036
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam arrowColor #A80036
+skinparam partitionBorderColor #A80036
+skinparam partitionBackgroundColor #F8F8F8
+
+title Flujo completo de RootishArrayStack\nDe la creación a la destrucción
+
+start
+
+partition "1. Creación" #E0F2F1 {
+  :Constructor;
+  :n = 0;
+  :blocks vacío;
+}
+
+partition "2. Inserción" #E1F5FE {
+  :add(i, x);
+  if (¿falta capacidad?) then (sí)
+    :grow();
+    :new T[blocks.size()+1];
+    :blocks.add(...);
+  else (no)
+  endif
+  :n++;
+  :desplazar a la derecha;
+  :set(i, x);
+}
+
+partition "3. Acceso" #E1F5FE {
+  :get(i) o set(i, x);
+  :i2b(i) → b;
+  :j = i − b(b+1)/2;
+  :blocks.get(b)[j];
+}
+
+partition "4. Eliminación" #EDE7F6 {
+  :remove(i);
+  :x = get(i);
+  :desplazar a la izquierda;
+  :n−−;
+  if (¿sobra capacidad?) then (sí)
+    :shrink();
+    :delete[] bloques;
+  else (no)
+  endif
+  :return x;
+}
+
+partition "5. Destrucción" #FFEBEE {
+  :~Destructor;
+  :clear();
+  :delete[] todos los bloques;
+  :n = 0;
+}
+
+stop
+
+@enduml

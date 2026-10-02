@@ -1,0 +1,114 @@
+@startuml clear
+skinparam activityBackgroundColor #FFEBEE
+skinparam activityBorderColor #C62828
+skinparam activityDiamondBackgroundColor #FFCDD2
+skinparam activityDiamondBorderColor #C62828
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam arrowColor #C62828
+skinparam partitionBorderColor #C62828
+skinparam partitionBackgroundColor #FFEBEE
+
+title clear() — Eliminar todos los bloques y liberar memoria\nO(√n) para tipos básicos, O(n) si T tiene destructor
+
+floating note left
+  **Idea**
+  Vaciar completamente la estructura:
+  1. Sacar cada bloque de blocks
+  2. Liberarlo con delete[]
+  3. Poner n = 0
+
+  Después de clear, el objeto
+  queda como recién construido.
+end note
+
+start
+
+partition "Entrada" {
+  :clear() se llama desde el destructor\n~RootishArrayStack() o manualmente;
+  note right
+    No recibe parámetros.
+    Modifica n y blocks.
+    No puede ser const.
+  end note
+}
+
+partition "Bucle: eliminar todos los bloques" {
+  :while (blocks.size() > 0);
+
+  if (¿blocks.size() > 0?) then (sí)
+    partition "Eliminar el último bloque" {
+      :ptr = blocks.remove(blocks.size() − 1);
+      note right
+        blocks.remove(i) saca el
+        elemento en la posición i
+        y lo devuelve.
+
+        Como i = blocks.size() − 1,
+        se saca el ÚLTIMO puntero.
+
+        ArrayStack.remove desde el
+        final es O(1): no hay que
+        desplazar punteros.
+      end note
+
+      :delete[] ptr;
+      note right
+        Libera la memoria del bloque.
+
+        Se usa **delete[]** porque
+        el bloque se creó con
+        **new T[...]** en grow().
+
+        Si T tiene destructor, se
+        llama al destructor de cada
+        elemento del bloque.
+      end note
+    }
+    -> bucle;
+  else (no)
+    :Salir del bucle;
+  endif
+}
+
+partition "Paso final: reiniciar n" {
+  :n = 0;
+  note right
+    Después de eliminar todos
+    los bloques, no queda ningún
+    elemento lógico.
+  end note
+}
+
+partition "Salida" {
+  :blocks vacío;
+  :n = 0;
+  :Estructura lista para reusar;
+}
+
+stop
+
+floating note right
+  **Estado inicial**
+  n = elementos actuales
+  r = blocks.size() ≥ 0
+
+  **Estado final**
+  n = 0
+  blocks.size() = 0
+  Toda la memoria de bloques
+  liberada con delete[]
+
+  **Complejidad:**
+  Bucle: r iteraciones, r = O(√n)
+  Cada delete[]: O(1) o O(tamaño)
+  Total: O(√n) para tipos básicos
+         O(n) si T tiene destructor
+
+  **Idempotente:**
+  Llamar clear() dos veces es
+  seguro: la segunda vez el
+  while no se ejecuta.
+end note
+
+@enduml

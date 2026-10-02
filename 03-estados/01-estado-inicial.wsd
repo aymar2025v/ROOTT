@@ -1,0 +1,54 @@
+@startuml ee
+skinparam stateBackgroundColor #ECEFF1
+skinparam stateBorderColor #37474F
+skinparam arrowColor #37474F
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+
+title Estados inicial y final de las operaciones principales
+
+[*] --> Inicial
+
+state Inicial {
+  Inicial : n = 0
+  Inicial : blocks.size() = 0
+  Inicial : blocks.a.length = 1
+  Inicial : Sin bloques de datos
+}
+
+Inicial --> ConElementos : add(0, x)
+
+state ConElementos {
+  ConElementos : n ≥ 1
+  ConElementos : blocks.size() ≥ 1
+  ConElementos : Capacidad ≥ n
+}
+
+ConElementos --> ConElementos : add(i, x) / set(i, x) / remove(i)
+ConElementos --> Vacio : remove hasta n = 0
+
+state Vacio {
+  Vacio : n = 0
+  Vacio : blocks.size() = 0
+  Vacio : blocks.a.length ≥ 1
+  Vacio : Sin bloques de datos
+}
+
+Vacio --> ConElementos : add(i, x)
+Vacio --> [*] : ~RootishArrayStack()
+ConElementos --> [*] : ~RootishArrayStack()
+Inicial --> [*] : ~RootishArrayStack()
+
+note right of Inicial
+  Constructor por defecto.
+  Solo se crea el arreglo
+  de punteros con capacidad 1.
+end note
+
+note right of Vacio
+  clear() también lleva aquí.
+  El destructor llama a clear()
+  antes de destruir los miembros.
+end note
+
+@enduml

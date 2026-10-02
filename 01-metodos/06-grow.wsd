@@ -1,0 +1,110 @@
+@startuml grow
+skinparam activityBackgroundColor #FEFECE
+skinparam activityBorderColor #A80036
+skinparam activityDiamondBackgroundColor #FFEEDD
+skinparam activityDiamondBorderColor #A80036
+skinparam noteBackgroundColor #FBFB77
+skinparam noteBorderColor #A80036
+skinparam arrowColor #A80036
+skinparam partitionBorderColor #A80036
+skinparam partitionBackgroundColor #F8F8F8
+
+title grow() — Añadir un nuevo bloque al final\nO(r) en el peor caso, O(1) amortizado
+
+floating note left
+  **Idea**
+  Los bloques tienen tamaños:
+    1, 2, 3, 4, ...
+
+  Si hay r bloques, el nuevo
+  bloque tendrá índice r
+  y tamaño r+1.
+
+  r = blocks.size()
+  tamaño nuevo = blocks.size() + 1
+end note
+
+start
+
+partition "Entrada" {
+  :grow() se llama desde add();
+  note right
+    Se invoca solo si la capacidad
+    actual no alcanza para n+1:
+
+    r(r+1)/2 < n + 1
+  end note
+}
+
+partition "Paso 1: calcular el tamaño del nuevo bloque" {
+  :tamaño = blocks.size() + 1;
+  note right
+    Si hay 0 bloques → tamaño 1
+    Si hay 1 bloque  → tamaño 2
+    Si hay 2 bloques → tamaño 3
+    ...
+    Si hay r bloques → tamaño r+1
+
+    Coincide con la regla
+    "bloque b tiene tamaño b+1".
+  end note
+}
+
+partition "Paso 2: reservar memoria para el bloque" {
+  :new T[blocks.size() + 1];
+  note right
+    Reserva un arreglo dinámico
+    de T con ese tamaño.
+
+    Devuelve un **T*** que apunta
+    al primer elemento del bloque.
+
+    **Ojo**: si T es una clase,
+    se llama al constructor por
+    defecto de cada elemento.
+  end note
+}
+
+partition "Paso 3: insertar el puntero al final de blocks" {
+  :blocks.add(blocks.size(), nuevo_ptr);
+  note right
+    blocks es ArrayStack<T*>.
+
+    add(i, x) inserta x en la
+    posición i.
+
+    Como i = blocks.size(),
+    se inserta **al final**,
+    equivalente a un push.
+
+    Si ArrayStack necesita
+    crecer su arreglo interno,
+    lo hace aquí (resize).
+  end note
+}
+
+partition "Salida" {
+  :blocks.size() aumenta en 1;
+  :n NO cambia (lo hace add);
+}
+
+stop
+
+floating note right
+  **Estado inicial**
+  blocks.size() = r
+  capacidad total = r(r+1)/2
+  n = elementos actuales
+
+  **Estado final**
+  blocks.size() = r + 1
+  capacidad total = (r+1)(r+2)/2
+  n sin cambios
+
+  **Complejidad:**
+  new T[k] → O(k)
+  blocks.add → O(1) amortizado
+  Total → O(r) amortizado O(1)
+end note
+
+@enduml

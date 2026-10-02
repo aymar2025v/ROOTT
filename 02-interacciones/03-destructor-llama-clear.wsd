@@ -1,0 +1,84 @@
+@startuml cl
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam sequenceArrowThickness 1.3
+skinparam sequenceLifeLineBorderColor #E65100
+skinparam sequenceLifeLineBackgroundColor #FFF3E0
+skinparam sequenceParticipantBackgroundColor #FFE0B2
+skinparam sequenceParticipantBorderColor #E65100
+skinparam actorBackgroundColor #FFF3E0
+skinparam actorBorderColor #E65100
+skinparam sequenceGroupBorderColor #E65100
+skinparam sequenceGroupBackgroundColor #FFF3E0
+
+title Interacción ~RootishArrayStack() → clear()\nLiberación de memoria al destruir
+
+actor "main()" as MAIN
+participant "~RootishArrayStack" as DTOR
+participant "clear()" as CLEAR
+participant "blocks\n(ArrayStack<T*>)" as BLK
+participant "array<T*>" as ARR
+participant "Sistema\n(delete[])" as SYS
+
+MAIN -> DTOR : ~RootishArrayStack()
+activate DTOR
+
+note right of DTOR
+  El objeto sale de su ámbito.
+  Comienza el destructor.
+end note
+
+DTOR -> CLEAR : clear()
+activate CLEAR
+
+group Bucle: eliminar todos los bloques
+  loop mientras blocks.size() > 0
+    CLEAR -> BLK : remove(blocks.size()−1)
+    activate BLK
+    BLK -> ARR : a[i]
+    activate ARR
+    ARR --> BLK : T* bloque
+    deactivate ARR
+    BLK --> CLEAR : T* bloque
+    deactivate BLK
+
+    CLEAR -> SYS : delete[] ptr
+    activate SYS
+    SYS --> CLEAR : ok
+    deactivate SYS
+  end
+end
+
+CLEAR -> CLEAR : n = 0
+CLEAR --> DTOR : fin
+deactivate CLEAR
+
+note right of DTOR
+  Cuerpo del destructor
+  terminado. Los bloques
+  ya fueron liberados.
+end note
+
+DTOR -> BLK : ~ArrayStack()
+activate BLK
+BLK -> ARR : ~array<T*>()
+activate ARR
+note right of ARR
+  Libera el arreglo interno
+  de punteros.
+  Los bloques ya no existen.
+end note
+ARR --> BLK : ok
+deactivate ARR
+BLK --> DTOR : ok
+deactivate BLK
+
+DTOR --> MAIN : objeto destruido
+deactivate DTOR
+
+note right of MAIN
+  Sin fugas de memoria.
+end note
+
+@enduml

@@ -1,0 +1,134 @@
+@startuml add
+skinparam activityBackgroundColor #E8F5E9
+skinparam activityBorderColor #2E7D32
+skinparam activityDiamondBackgroundColor #C8E6C9
+skinparam activityDiamondBorderColor #2E7D32
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam arrowColor #2E7D32
+skinparam partitionBorderColor #2E7D32
+skinparam partitionBackgroundColor #F1F8E9
+
+title add(i, x) — Insertar x en la posición i\nO(n − i) — el opuesto simétrico de remove
+
+floating note left
+  **Idea**
+  1. Asegurar capacidad para n+1
+  2. Incrementar n
+  3. Desplazar a la derecha desde i
+  4. Colocar x en i
+
+  Caso especial:
+  add(n, x) ≡ push (O(1) amortizado)
+end note
+
+start
+
+partition "Entrada" {
+  :Recibe i (índice de inserción);
+  :Recibe x (valor a insertar, por copia);
+  note right
+    Condición: 0 ≤ i ≤ n
+    (se permite i = n → push)
+  end note
+}
+
+partition "Paso 1: verificar capacidad" {
+  :r = blocks.size();
+  note right
+    r = número de bloques actuales.
+
+    Capacidad total = r(r+1)/2
+  end note
+
+  if (r(r+1)/2 < n + 1) then (sí, falta capacidad)
+    :grow();
+    note right
+      Añade un bloque al final.
+      Después:
+      r aumenta en 1
+      capacidad = (r+1)(r+2)/2
+    end note
+  else (no, hay espacio)
+    :No hacer nada;
+  endif
+}
+
+partition "Paso 2: incrementar n" {
+  :n++;
+  note right
+    Ahora n es el nuevo tamaño
+    lógico (antes de colocar x).
+
+    El último índice válido
+    es n−1, que aún no tiene
+    el valor definitivo.
+  end note
+}
+
+partition "Paso 3: desplazar elementos a la derecha" {
+  :j = n − 1;
+
+  while (j > i) is (sí)
+    :set(j, get(j − 1));
+    note right
+      Copia el elemento de la
+      izquierda a la derecha.
+
+      **Se va de derecha a
+      izquierda** para no
+      sobrescribir datos
+      que aún no se han movido.
+    end note
+
+    :j−−;
+  endwhile (no)
+
+  note right
+    Cuando j = i, se detiene.
+    Queda un hueco en i.
+  end note
+}
+
+partition "Paso 4: colocar el nuevo valor" {
+  :set(i, x);
+  note right
+    Escribe x en la posición i,
+    rellenando el hueco.
+
+    set usa i2b internamente
+    para localizar el bloque.
+  end note
+}
+
+partition "Salida" {
+  :n ya incrementado;
+  :blocks.size() puede haber aumentado;
+}
+
+stop
+
+floating note right
+  **Estado inicial**
+  i = posición de inserción
+  x = valor nuevo
+  n = tamaño actual
+  r = blocks.size()
+
+  **Estado final**
+  n = n_inicial + 1
+  x colocado en posición i
+  elementos ≥ i desplazados +1
+  blocks.size() = r o r+1
+
+  **Complejidad:**
+  grow: O(√n) amortizado
+  bucle: O(n − i)
+  set: O(1)
+  Total: O(n − i)
+
+  **Puede ser const?**
+  NO — modifica n, blocks y datos
+end note
+
+@enduml

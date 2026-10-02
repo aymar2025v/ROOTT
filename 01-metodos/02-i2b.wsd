@@ -1,0 +1,108 @@
+@startuml i2bbmejor
+skinparam activityBackgroundColor #FEFECE
+skinparam activityBorderColor #A80036
+skinparam activityDiamondBackgroundColor #FFEEDD
+skinparam activityDiamondBorderColor #A80036
+skinparam noteBackgroundColor #FBFB77
+skinparam noteBorderColor #A80036
+skinparam arrowColor #A80036
+skinparam partitionBorderColor #A80036
+skinparam partitionBackgroundColor #F8F8F8
+
+title i2b(i) — Index to Block\nDado un índice lógico i, devuelve el bloque b donde vive
+
+floating note left
+  **Idea**
+  Los bloques tienen tamaños crecientes:
+  Bloque 0: 1 elemento
+  Bloque 1: 2 elementos
+  Bloque 2: 3 elementos
+  ...
+  Bloque b: b+1 elementos
+
+  El último índice del bloque b es:
+  **(b+1)(b+2)/2 − 1**
+
+  Queremos el menor b tal que
+  i ≤ (b+1)(b+2)/2 − 1
+end note
+
+start
+
+partition "Entrada" {
+  :Recibe i (índice lógico);
+  note right
+    Condición: 0 ≤ i < n
+    No se modifica ningún miembro.
+  end note
+}
+
+partition "Paso 1: plantear la ecuación" {
+  :Igualar i al último índice del bloque b;
+  note right
+    i = (b+1)(b+2)/2 − 1
+
+    Despejar:
+    2i = (b+1)(b+2) − 2
+    2i = b² + 3b + 2 − 2
+    2i = b² + 3b
+    b² + 3b − 2i = 0
+  end note
+}
+
+partition "Paso 2: resolver la cuadrática" {
+  :Aplicar fórmula general;
+  note right
+    b = (−3 ± √(9 + 8i)) / 2
+
+    Tomamos la raíz positiva
+    porque b ≥ 0.
+  end note
+
+  :db = (−3 + √(9 + 8i)) / 2;
+  note right
+    Se usa **double** para
+    no perder precisión
+    antes del redondeo.
+  end note
+}
+
+partition "Paso 3: redondear hacia arriba" {
+  :b = ceil(db);
+  note right
+    Necesitamos el menor bloque
+    cuyo último índice sea ≥ i.
+    Por eso **ceil**, no floor.
+
+    ceil(0.0)  = 0
+    ceil(0.56) = 1
+    ceil(1.0)  = 1
+    ceil(1.37) = 2
+  end note
+
+  :Convertir a int;
+  note right
+    (int)std::ceil(db)
+  end note
+}
+
+partition "Salida" {
+  :return b;
+}
+
+stop
+
+floating note right
+  **Estado inicial**
+  i = valor de entrada
+  n, blocks sin cambios
+
+  **Estado final**
+  b = bloque donde está i
+  n, blocks sin cambios
+
+  **Complejidad:** O(1)
+  Solo aritmética + sqrt + ceil
+end note
+
+@enduml

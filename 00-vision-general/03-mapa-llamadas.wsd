@@ -1,0 +1,117 @@
+@startuml mapallamadas
+skinparam arrowColor #A80036
+skinparam arrowFontColor #A80036
+skinparam classBackgroundColor #FEFECE
+skinparam classBorderColor #A80036
+skinparam noteBackgroundColor #FBFB77
+skinparam noteBorderColor #A80036
+skinparam packageStyle rectangle
+
+title Mapa de llamadas - RootishArrayStack
+
+package "API pública" #DDEEFF {
+    class "add(i, x)" as ADD
+    class "remove(i)" as REM
+    class "get(i)" as GET
+    class "set(i, x)" as SET
+    class "size()" as SIZE
+    class "clear()" as CLEAR
+}
+
+package "Constructor / Destructor" #FFEEDD {
+    class "RootishArrayStack()" as CTOR
+    class "~RootishArrayStack()" as DTOR
+}
+
+package "Auxiliares internos" #EEFFEE {
+    class "i2b(i)" as I2B
+    class "grow()" as GROW
+    class "shrink()" as SHRINK
+}
+
+package "ArrayStack<T*>" #F0F0F0 {
+    class "blocks.add(...)" as BADD
+    class "blocks.remove(...)" as BREM
+    class "blocks.get(b)" as BGET
+    class "blocks.size()" as BSIZE
+}
+
+package "Sistema" #FCE4EC {
+    class "new T[...]" as NEW
+    class "delete[]" as DEL
+}
+
+' API -> auxiliares
+ADD ..> GROW : si falta capacidad
+ADD ..> SET : set(j, get(j-1))
+ADD ..> GET : get(j-1)
+ADD ..> BADD : vía grow()
+ADD ..> BSIZE : consulta r
+
+REM ..> GET : get(i), get(j+1)
+REM ..> SET : set(j, get(j+1))
+REM ..> SHRINK : si sobra capacidad
+REM ..> BSIZE : consulta r
+
+GET ..> I2B : localiza bloque
+GET ..> BGET : obtiene puntero
+
+SET ..> I2B : localiza bloque
+SET ..> BGET : obtiene puntero
+
+SIZE ..> SIZE : solo lee n
+
+CLEAR ..> BREM : saca bloques
+CLEAR ..> DEL : libera bloques
+
+CTOR ..> SIZE : inicializa n
+
+DTOR ..> CLEAR : libera todo
+
+' Auxiliares -> ArrayStack / Sistema
+I2B ..> I2B : sqrt + ceil
+GROW ..> BSIZE : blocks.size()
+GROW ..> NEW : new T[...]
+GROW ..> BADD : blocks.add(...)
+
+SHRINK ..> BSIZE : blocks.size()
+SHRINK ..> BREM : blocks.remove(...)
+SHRINK ..> DEL : delete[]
+
+' ArrayStack -> array
+BADD ..> BGET : si resize
+BREM ..> BGET : si resize
+BGET ..> BGET : a[b]
+
+note bottom of I2B
+  O(1)
+  Se llama desde get, set
+end note
+
+note bottom of GROW
+  Añade bloque de tamaño
+  blocks.size()+1
+  O(√n) amortizado
+end note
+
+note bottom of SHRINK
+  Elimina bloques del final
+  Condición conservadora:
+  (r-2)(r-1)/2 >= n
+  O(√n) amortizado
+end note
+
+note right of ADD
+  Flujo típico:
+  add -> grow -> new + blocks.add
+  add -> set/get -> i2b -> blocks.get
+end note
+
+note right of REM
+  Flujo típico:
+  remove -> get
+  remove -> set/get -> i2b -> blocks.get
+  remove -> shrink -> delete[] + blocks.remove
+end note
+
+@enduml

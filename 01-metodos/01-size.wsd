@@ -1,0 +1,85 @@
+@startuml size
+skinparam activityBackgroundColor #E1F5FE
+skinparam activityBorderColor #01579B
+skinparam activityDiamondBackgroundColor #B3E5FC
+skinparam activityDiamondBorderColor #01579B
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam arrowColor #01579B
+skinparam partitionBorderColor #01579B
+skinparam partitionBackgroundColor #E1F5FE
+
+title size() — Devolver el número de elementos\nO(1) — no modifica la estructura
+
+floating note left
+  **Idea**
+  n = número de elementos
+  almacenados en el
+  RootishArrayStack.
+
+  NO confundir con:
+  blocks.size() = número de bloques
+
+  Ejemplo:
+  n = 6          (elementos)
+  blocks.size() = 3  (bloques: 1+2+3)
+end note
+
+start
+
+partition "Entrada" {
+  :size() se llama desde el usuario\no desde otros métodos;
+  note right
+    No recibe parámetros.
+    No modifica n ni blocks.
+  end note
+}
+
+partition "Acceso directo al campo n" {
+  :return n;
+  note right
+    n es un miembro **protected**
+    de RootishArrayStack.
+
+    Se declaró como:
+      int n;
+
+    Se actualiza en:
+    - add:   n++
+    - remove: n--
+    - clear:  n = 0
+    - constructor: n = 0
+  end note
+}
+
+partition "Salida" {
+  :Devuelve un int;
+  note right
+    El valor devuelto es el número
+    de elementos lógicos.
+
+    No se cuentan bloques.
+  end note
+}
+
+stop
+
+floating note right
+  **Estado inicial**
+  n = elementos actuales
+  blocks sin cambios
+
+  **Estado final**
+  Igual que al inicio.
+  size() no modifica nada.
+
+  **Complejidad:** O(1)
+  Solo lee un int.
+
+  **¿Puede ser const?**
+  SÍ. No modifica el objeto.
+  Debería declararse:
+    int size() const;
+end note
+
+@enduml

@@ -1,0 +1,42 @@
+@startuml tarra
+skinparam stateBackgroundColor #EDE7F6
+skinparam stateBorderColor #4527A0
+skinparam arrowColor #4527A0
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+
+title remove(1) — Estado antes y después\nn = 6, r = 3 → n = 5, r = 3
+
+state "Antes" as ANTES {
+  ANTES : n = 6
+  ANTES : blocks.size() = 3
+  ANTES : Capacidad = 6
+  ANTES : Bloque 0: [10]
+  ANTES : Bloque 1: [20, 30]
+  ANTES : Bloque 2: [40, 50, 60]
+}
+
+state "Después" as DESPUES {
+  DESPUES : n = 5
+  DESPUES : blocks.size() = 3
+  DESPUES : Capacidad = 6
+  DESPUES : Bloque 0: [10]
+  DESPUES : Bloque 1: [30, 40]
+  DESPUES : Bloque 2: [50, 60, 60*]
+}
+
+ANTES --> DESPUES : remove(1)
+
+note bottom of ANTES
+  Se guarda x = 20.
+end note
+
+note bottom of DESPUES
+  El 60 de la posición 5
+  quedó duplicado fuera
+  del rango lógico (n = 5).
+  No se llamó a shrink()
+  porque 1 >= 5 es false.
+end note
+
+@enduml

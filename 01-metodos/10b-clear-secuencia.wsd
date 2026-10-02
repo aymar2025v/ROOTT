@@ -1,0 +1,126 @@
+@startuml clearsec
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam sequenceArrowThickness 1.3
+skinparam sequenceLifeLineBorderColor #C62828
+skinparam sequenceLifeLineBackgroundColor #FFEBEE
+skinparam sequenceParticipantBackgroundColor #FFCDD2
+skinparam sequenceParticipantBorderColor #C62828
+skinparam actorBackgroundColor #FFEBEE
+skinparam actorBorderColor #C62828
+skinparam sequenceGroupBorderColor #C62828
+skinparam sequenceGroupBackgroundColor #FFEBEE
+
+title clear() — Diagrama de secuencia\nEjemplo: n = 6, r = 3 bloques
+
+actor "Usuario o ~RAS()" as USR
+participant "RootishArrayStack" as RAS
+participant "blocks\n(ArrayStack<T*>)" as BLK
+participant "array<T*>" as ARR
+participant "Sistema\n(delete[])" as SYS
+
+USR -> RAS : clear()
+activate RAS
+
+note right of RAS
+  n = 6
+  blocks.size() = 3
+  Bloques: tamaños 1, 2, 3
+end note
+
+group Iteración 1
+  RAS -> BLK : size()
+  activate BLK
+  BLK --> RAS : 3
+  deactivate BLK
+
+  RAS -> BLK : remove(2)
+  activate BLK
+  BLK -> ARR : a[2]
+  activate ARR
+  ARR --> BLK : T* bloque 2
+  deactivate ARR
+  note right of BLK
+    Se saca el último puntero.
+    blocks.size() = 2.
+  end note
+  BLK --> RAS : T* bloque 2
+  deactivate BLK
+
+  RAS -> SYS : delete[] ptr
+  activate SYS
+  note right of SYS
+    Libera el bloque 2
+    (tamaño 3).
+  end note
+  SYS --> RAS : ok
+  deactivate SYS
+end
+
+group Iteración 2
+  RAS -> BLK : size()
+  activate BLK
+  BLK --> RAS : 2
+  deactivate BLK
+
+  RAS -> BLK : remove(1)
+  activate BLK
+  BLK -> ARR : a[1]
+  activate ARR
+  ARR --> BLK : T* bloque 1
+  deactivate ARR
+  note right of BLK
+    blocks.size() = 1.
+  end note
+  BLK --> RAS : T* bloque 1
+  deactivate BLK
+
+  RAS -> SYS : delete[] ptr
+  activate SYS
+  note right of SYS
+    Libera el bloque 1
+    (tamaño 2).
+  end note
+  SYS --> RAS : ok
+  deactivate SYS
+end
+
+group Iteración 3
+  RAS -> BLK : size()
+  activate BLK
+  BLK --> RAS : 1
+  deactivate BLK
+
+  RAS -> BLK : remove(0)
+  activate BLK
+  BLK -> ARR : a[0]
+  activate ARR
+  ARR --> BLK : T* bloque 0
+  deactivate ARR
+  note right of BLK
+    blocks.size() = 0.
+  end note
+  BLK --> RAS : T* bloque 0
+  deactivate BLK
+
+  RAS -> SYS : delete[] ptr
+  activate SYS
+  note right of SYS
+    Libera el bloque 0
+    (tamaño 1).
+  end note
+  SYS --> RAS : ok
+  deactivate SYS
+end
+
+RAS -> RAS : n = 0
+note right of RAS
+  Todos los bloques liberados.
+  La estructura queda vacía.
+end note
+
+RAS --> USR : void
+deactivate RAS
+
+@enduml

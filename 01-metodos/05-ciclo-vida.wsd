@@ -1,0 +1,32 @@
+@startuml ciclo
+skinparam stateBackgroundColor #FFF3E0
+skinparam stateBorderColor #E65100
+skinparam arrowColor #E65100
+
+title Ciclo de vida de RootishArrayStack
+
+[*] --> Vacio : RootishArrayStack()
+
+state Vacio {
+  Vacio : n = 0
+  Vacio : blocks vacío
+}
+
+Vacio --> ConDatos : add(i, x)
+ConDatos --> ConDatos : add / remove / set
+ConDatos --> Vacio : clear()
+ConDatos --> [*] : ~RootishArrayStack()
+Vacio --> [*] : ~RootishArrayStack()
+
+note right of Vacio
+  clear() también puede
+  llevar a Vacio desde
+  ConDatos.
+end note
+
+note right of ConDatos
+  n > 0
+  blocks.size() ≥ 1
+end note
+
+@enduml

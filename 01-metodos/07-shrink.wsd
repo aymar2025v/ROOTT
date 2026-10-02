@@ -1,0 +1,129 @@
+@startuml shrink
+skinparam activityBackgroundColor #FEFECE
+skinparam activityBorderColor #A80036
+skinparam activityDiamondBackgroundColor #FFEEDD
+skinparam activityDiamondBorderColor #A80036
+skinparam noteBackgroundColor #FBFB77
+skinparam noteBorderColor #A80036
+skinparam arrowColor #A80036
+skinparam partitionBorderColor #A80036
+skinparam partitionBackgroundColor #F8F8F8
+
+title shrink() — Eliminar bloques sobrantes del final\nO(√n) en el peor caso, O(1) amortizado
+
+floating note left
+  **Idea**
+  La capacidad de k bloques es:
+    1 + 2 + ... + k = k(k+1)/2
+
+  Si tenemos r bloques y
+  eliminamos el último,
+  quedan r−1 bloques.
+
+  Condición conservadora:
+  solo eliminamos si con
+  **r−2** bloques aún caben
+  los n elementos.
+
+  Esto evita thrashing entre
+  grow y shrink.
+end note
+
+start
+
+partition "Entrada" {
+  :shrink() se llama desde remove();
+  note right
+    Se invoca solo si:
+    (r−2)(r−1)/2 ≥ n
+
+    Es decir, hay holgura
+    suficiente para liberar
+    al menos un bloque.
+  end note
+}
+
+partition "Paso 1: guardar el número actual de bloques" {
+  :r = blocks.size();
+  note right
+    r = número de bloques
+    antes de empezar.
+
+    Se usa variable local
+    para no llamar a
+    blocks.size() en cada
+    iteración.
+  end note
+}
+
+partition "Paso 2: bucle mientras se pueda eliminar" {
+  :while (r > 0 && (r−2)(r−1)/2 >= n);
+
+  note right
+    **r > 0**
+    Evita eliminar si ya no
+    hay bloques.
+
+    **(r−2)(r−1)/2 >= n**
+    Capacidad de r−2 bloques
+    alcanza para n elementos.
+
+    Si es verdadero, se puede
+    eliminar el último bloque.
+  end note
+
+  if (¿condición verdadera?) then (sí)
+    partition "Paso 3: eliminar el último bloque" {
+      :delete[] blocks.remove(blocks.size() − 1);
+      note right
+        **Orden importante:**
+        1. blocks.remove(...) saca el
+           último puntero y lo devuelve.
+        2. delete[] libera la memoria
+           del bloque apuntado.
+
+        Se usa delete[] porque el
+        bloque se creó con new T[].
+
+        blocks.remove desde el final
+        es O(1) en ArrayStack.
+      end note
+
+      :r−−;
+      note right
+        Un bloque menos.
+        Se reevalúa la condición.
+      end note
+    }
+    -> bucle;
+  else (no)
+    :Salir del bucle;
+  endif
+}
+
+partition "Salida" {
+  :blocks.size() = r_final;
+  :n sin cambios;
+}
+
+stop
+
+floating note right
+  **Estado inicial**
+  r = blocks.size()
+  n = elementos actuales
+  Condición: hay holgura
+
+  **Estado final**
+  r_final ≤ r
+  blocks.size() = r_final
+  n sin cambios
+  Bloques sobrantes liberados
+
+  **Complejidad:**
+  Cada iteración: O(1) + delete[]
+  Número de bloques: O(√n)
+  Total: O(√n) amortizado O(1)
+end note
+
+@enduml

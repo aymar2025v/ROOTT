@@ -1,0 +1,40 @@
+@startuml vllls
+skinparam stateBackgroundColor #FFEBEE
+skinparam stateBorderColor #C62828
+skinparam arrowColor #C62828
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+
+title clear() — Estado antes y después\nn = 6, r = 3 → n = 0, r = 0
+
+state "Antes" as ANTES {
+  ANTES : n = 6
+  ANTES : blocks.size() = 3
+  ANTES : Bloque 0: [10]
+  ANTES : Bloque 1: [20, 30]
+  ANTES : Bloque 2: [40, 50, 60]
+  ANTES : Memoria de bloques reservada
+}
+
+state "Después" as DESPUES {
+  DESPUES : n = 0
+  DESPUES : blocks.size() = 0
+  DESPUES : Sin bloques de datos
+  DESPUES : Memoria liberada con delete[]
+  DESPUES : blocks.a.length ≥ 1
+}
+
+ANTES --> DESPUES : clear()
+
+note bottom of ANTES
+  Los 3 bloques ocupan
+  1 + 2 + 3 = 6 posiciones.
+end note
+
+note bottom of DESPUES
+  Se liberaron los 3 bloques.
+  La estructura queda como
+  recién construida.
+end note
+
+@enduml

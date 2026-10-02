@@ -1,0 +1,207 @@
+@startuml mapa
+skinparam componentStyle rectangle
+skinparam componentBackgroundColor #FEFECE
+skinparam componentBorderColor #A80036
+skinparam arrowColor #A80036
+skinparam arrowFontColor #A80036
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam packageStyle rectangle
+skinparam packageBorderColor #555555
+skinparam packageBackgroundColor #FAFAFA
+
+title Mapa global — RootishArrayStack\nConexión de todos los métodos, interacciones y estados
+
+' ============================================================
+' CAPA 0: CICLO DE VIDA
+' ============================================================
+package "Ciclo de vida" #E0F2F1 {
+    component "Constructor\nRootishArrayStack()" as CTOR
+    component "Destructor\n~RootishArrayStack()" as DTOR
+    component "clear()" as CLEAR
+}
+
+' ============================================================
+' CAPA 1: API PÚBLICA
+' ============================================================
+package "API pública" #E1F5FE {
+    component "size()" as SIZE
+    component "get(i)" as GET
+    component "set(i, x)" as SET
+    component "add(i, x)" as ADD
+    component "remove(i)" as REM
+}
+
+' ============================================================
+' CAPA 2: AUXILIARES INTERNOS
+' ============================================================
+package "Auxiliares internos" #FFF3E0 {
+    component "i2b(i)" as I2B
+    component "grow()" as GROW
+    component "shrink()" as SHRINK
+}
+
+' ============================================================
+' CAPA 3: INFRAESTRUCTURA
+' ============================================================
+package "Infraestructura" #EDE7F6 {
+    component "blocks\n(ArrayStack<T*>)" as BLK
+    component "array<T*>" as ARR
+    component "Sistema\n(new / delete[])" as SYS
+}
+
+' ============================================================
+' CONEXIONES: CICLO DE VIDA
+' ============================================================
+DTOR ..> CLEAR : llama
+CLEAR ..> BLK : remove()
+CLEAR ..> SYS : delete[]
+
+' ============================================================
+' CONEXIONES: API -> AUXILIARES
+' ============================================================
+ADD ..> GROW : si falta\ncapacidad
+ADD ..> SET : desplaza\n+derecha
+ADD ..> GET : lee vecino
+
+REM ..> SHRINK : si sobra\ncapacidad
+REM ..> SET : desplaza\n-izquierda
+REM ..> GET : guarda\n+lee vecino
+
+GET ..> I2B : localiza bloque
+SET ..> I2B : localiza bloque
+
+' ============================================================
+' CONEXIONES: AUXILIARES -> INFRAESTRUCTURA
+' ============================================================
+I2B ..> I2B : sqrt + ceil
+
+GROW ..> BLK : add() al final
+GROW ..> SYS : new T[]
+
+SHRINK ..> BLK : remove() del final
+SHRINK ..> SYS : delete[]
+
+' ============================================================
+' CONEXIONES: INFRAESTRUCTURA INTERNA
+' ============================================================
+BLK ..> ARR : a[b]
+BLK ..> SYS : new / delete[]
+
+' ============================================================
+' CONEXIONES: API -> INFRAESTRUCTURA (vía i2b)
+' ============================================================
+GET ..> BLK : get(b)
+SET ..> BLK : get(b)
+SIZE ..> SIZE : lee n
+
+' ============================================================
+' NOTAS: RESÚMENES POR MÉTODO
+' ============================================================
+note right of SIZE
+  **size()**
+  O(1)
+  Solo lee n.
+  No modifica.
+  → Diagrama 13
+end note
+
+note right of I2B
+  **i2b(i)**
+  O(1)
+  b = ceil((−3+√(9+8i))/2)
+  → Diagrama 4
+end note
+
+note right of GET
+  **get(i)**
+  O(1)
+  i2b → j → blocks.get
+  No modifica.
+  → Diagrama 5
+end note
+
+note right of SET
+  **set(i, x)**
+  O(1)
+  Guarda viejo, escribe nuevo.
+  Sí modifica.
+  → Diagrama 6
+end note
+
+note right of GROW
+  **grow()**
+  O(√n) amort.
+  new T[blocks.size()+1]
+  + blocks.add al final.
+  → Diagrama 7
+end note
+
+note right of SHRINK
+  **shrink()**
+  O(√n) amort.
+  delete[] blocks.remove
+  Condición conservadora.
+  → Diagrama 8
+end note
+
+note right of ADD
+  **add(i, x)**
+  O(n−i)
+  grow? → n++ → desplaza → set
+  → Diagrama 9
+end note
+
+note right of REM
+  **remove(i)**
+  O(n−i)
+  get → desplaza → n−− → shrink?
+  → Diagrama 10
+end note
+
+note right of CLEAR
+  **clear()**
+  O(√n) u O(n)
+  delete[] todos los bloques.
+  n = 0.
+  → Diagrama 11
+end note
+
+note right of CTOR
+  **Constructor**
+  O(1)
+  n = 0
+  blocks vacío.
+  → Diagrama 14
+end note
+
+note right of DTOR
+  **Destructor**
+  O(√n) u O(n)
+  clear() + destruir miembros.
+  → Diagrama 12
+end note
+
+' ============================================================
+' LEYENDA
+' ============================================================
+legend bottom
+  **Leyenda**
+  | Color | Capa |
+  |-------|------|
+  | Verde menta | Ciclo de vida |
+  | Azul cielo | API pública |
+  | Naranja claro | Auxiliares internos |
+  | Morado claro | Infraestructura |
+
+  **Tipos de flecha**
+  | Flecha | Significado |
+  |--------|-------------|
+  | ..> | Llama a |
+  | --- | Contiene |
+
+  **Números de diagrama**
+  Cada nota indica el diagrama detallado correspondiente.
+end legend
+
+@enduml

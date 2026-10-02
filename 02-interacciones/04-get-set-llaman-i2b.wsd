@@ -1,0 +1,63 @@
+@startuml iii
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam sequenceArrowThickness 1.3
+skinparam sequenceLifeLineBorderColor #01579B
+skinparam sequenceLifeLineBackgroundColor #E1F5FE
+skinparam sequenceParticipantBackgroundColor #B3E5FC
+skinparam sequenceParticipantBorderColor #01579B
+skinparam actorBackgroundColor #E1F5FE
+skinparam actorBorderColor #01579B
+
+title Interacción get/set → i2b → blocks.get\nLocalización de un elemento en O(1)
+
+actor "get(i) o set(i, x)" as API
+participant "RootishArrayStack" as RAS
+participant "i2b" as I2B
+participant "blocks\n(ArrayStack<T*>)" as BLK
+participant "array<T*>" as ARR
+
+API -> RAS : i2b(i)
+activate RAS
+
+RAS -> I2B : i2b(i)
+activate I2B
+note right of I2B
+  b = ceil(
+    (−3 + √(9 + 8i)) / 2
+  )
+end note
+I2B --> RAS : b
+deactivate I2B
+
+RAS -> RAS : j = i − b(b+1)/2
+note right of RAS
+  j = posición dentro
+  del bloque b.
+end note
+
+RAS -> BLK : get(b)
+activate BLK
+BLK -> ARR : a[b]
+activate ARR
+ARR --> BLK : T* bloque b
+deactivate ARR
+BLK --> RAS : T* bloque b
+deactivate BLK
+
+note right of RAS
+  ptr = blocks.get(b)
+  elemento = *(ptr + j)
+end note
+
+RAS --> API : elemento o valor viejo
+deactivate RAS
+
+note right of API
+  get devuelve el elemento.
+  set devuelve el valor viejo
+  y escribe el nuevo.
+end note
+
+@enduml

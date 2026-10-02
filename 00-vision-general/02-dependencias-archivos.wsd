@@ -1,0 +1,92 @@
+@startuml Dependencias
+skinparam componentStyle rectangle
+skinparam componentBackgroundColor #FEFECE
+skinparam componentBorderColor #A80036
+skinparam arrowColor #A80036
+skinparam arrowFontColor #A80036
+skinparam noteBackgroundColor #FBFB77
+skinparam noteBorderColor #A80036
+skinparam packageStyle rectangle
+
+title Dependencias entre archivos - #include y símbolos usados
+
+package "STL / Sistema" #FCE4EC {
+    component "<iostream>" as IOSTREAM
+    component "<algorithm>" as ALGO
+    component "<stdlib.h>" as STDLIB
+    component "<assert.h>" as ASSERT
+    component "<cmath>" as CMATH
+}
+
+package "Proyecto ODS" #DDEEFF {
+    component "utils.h" as UTILS
+    component "array.h" as ARRAY
+    component "ArrayStack.h" as ASTACK
+    component "RootishArrayStack.h" as RAS
+}
+
+package "Usuario" #EEFFEE {
+    component "main.cpp" as MAIN
+}
+
+' Includes del sistema
+ARRAY ..> IOSTREAM : #include
+ARRAY ..> ALGO : #include\nstd::copy, std::fill
+ARRAY ..> STDLIB : #include
+ARRAY ..> ASSERT : #include
+
+ASTACK ..> UTILS : #include\nusa max()
+
+RAS ..> ASTACK : #include
+RAS ..> CMATH : #include\nstd::sqrt, std::ceil
+
+' Usuario
+MAIN ..> RAS : #include
+
+' Dependencias transitivas (nota)
+note right of RAS
+  RootishArrayStack.h
+  ---------------------
+  #include "ArrayStack.h"
+     -> que incluye "array.h"
+     -> que incluye <iostream>, <algorithm>,
+        <stdlib.h>, <assert.h>
+
+  #include <cmath>
+     -> std::sqrt, std::ceil
+end note
+
+note bottom of ASTACK
+  ArrayStack.h
+  ---------------------
+  #include "array.h"
+  #include "utils.h"
+
+  Usa:
+  - array<T> como miembro a
+  - max() en resize()
+end note
+
+note bottom of ARRAY
+  array.h
+  ---------------------
+  Define la clase array<T>.
+  No depende del proyecto;
+  solo de STL y del sistema.
+
+  Usa:
+  - new T[] y delete[]
+  - std::copy en copyOfRange
+  - std::fill en fill
+  - assert en operator[]
+end note
+
+note bottom of UTILS
+  utils.h
+  ---------------------
+  Define min, max, compare, equals.
+  No depende de nada del proyecto.
+  Solo template + inline.
+end note
+
+@enduml

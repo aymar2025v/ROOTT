@@ -1,0 +1,123 @@
+@startuml destructor
+skinparam activityBackgroundColor #FFF3E0
+skinparam activityBorderColor #E65100
+skinparam activityDiamondBackgroundColor #FFE0B2
+skinparam activityDiamondBorderColor #E65100
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam arrowColor #E65100
+skinparam partitionBorderColor #E65100
+skinparam partitionBackgroundColor #FFF3E0
+
+title ~RootishArrayStack() — Destructor\nLibera todos los bloques y deja el objeto listo para destruirse
+
+floating note left
+  **¿Por qué existe?**
+  Los bloques se crearon con
+  **new T[...]** en grow().
+
+  El destructor de blocks
+  (ArrayStack<T*>) solo libera
+  el arreglo de punteros,
+  NO los bloques apuntados.
+
+  Por eso hay que liberarlos
+  explícitamente con clear().
+end note
+
+start
+
+partition "Entrada: se destruye el objeto" {
+  :El objeto sale de su ámbito\no se llama a delete;
+  note right
+    Casos:
+    - Variable local que sale de su función
+    - Objeto miembro que se destruye
+    - delete sobre un puntero
+    - Excepción que desenrolla la pila
+  end note
+}
+
+partition "Paso 1: ejecutar el cuerpo del destructor" {
+  :clear();
+  note right
+    El cuerpo del destructor
+    es solo una llamada a clear().
+
+    clear() hace:
+    - while (blocks.size() > 0)
+    - delete[] blocks.remove(...)
+    - n = 0
+
+    Ver diagrama 10-clear para
+    el detalle paso a paso.
+  end note
+}
+
+partition "Paso 2: destruir los miembros del objeto" {
+  :Se destruyen los miembros en orden inverso\nal de declaración;
+  note right
+    Orden de destrucción:
+
+    1. **n** (int)
+       - No hace nada especial.
+
+    2. **blocks** (ArrayStack<T*>)
+       - Llama a ~ArrayStack().
+       - ~ArrayStack() llama a
+         ~array<T*>().
+       - ~array<T*>() libera el
+         arreglo interno de punteros
+         con delete[].
+
+    Importante: los bloques ya
+    fueron liberados en clear(),
+    así que blocks ya estaba vacío.
+  end note
+}
+
+partition "Paso 3: liberar la memoria del objeto" {
+  :Si el objeto se creó con new,\nse libera su memoria;
+  note right
+    Si el objeto estaba en el
+    stack, no hay nada que hacer.
+
+    Si estaba en el heap
+    (creado con new), el operador
+    delete libera la memoria del
+    propio objeto RootishArrayStack.
+  end note
+}
+
+partition "Salida: objeto destruido" {
+  :Sin fugas de memoria;
+}
+
+stop
+
+floating note right
+  **Estado inicial**
+  n = elementos actuales
+  blocks con r bloques
+  Memoria de bloques reservada
+
+  **Estado final**
+  clear() ya liberó todos los
+  bloques con delete[]
+  blocks vacío
+  n = 0
+  Memoria del objeto liberada
+
+  **Complejidad:**
+  clear(): O(√n) o O(n)
+  Destruir miembros: O(1)
+  Total: O(√n) o O(n)
+
+  **¿Virtual?**
+  Sí, para que al destruir
+  vía puntero a la clase base
+  se llame al destructor
+  correcto.
+end note
+
+@enduml

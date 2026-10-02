@@ -1,0 +1,150 @@
+@startuml dessec
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor #FFF9C4
+skinparam noteBorderColor #F9A825
+skinparam sequenceArrowThickness 1.3
+skinparam sequenceLifeLineBorderColor #E65100
+skinparam sequenceLifeLineBackgroundColor #FFF3E0
+skinparam sequenceParticipantBackgroundColor #FFE0B2
+skinparam sequenceParticipantBorderColor #E65100
+skinparam actorBackgroundColor #FFF3E0
+skinparam actorBorderColor #E65100
+skinparam sequenceGroupBorderColor #E65100
+skinparam sequenceGroupBackgroundColor #FFF3E0
+
+title Ciclo de vida completo de RootishArrayStack
+
+actor "main()" as MAIN
+participant "RootishArrayStack" as RAS
+participant "blocks\n(ArrayStack<T*>)" as BLK
+participant "array<T*>" as ARR
+participant "Sistema\n(new/delete[])" as SYS
+
+group Construcción
+  MAIN -> RAS : RootishArrayStack()
+  activate RAS
+
+  note right of RAS
+    Constructor por defecto:
+    solo n = 0.
+
+    Antes se llama al constructor
+    de blocks, que inicializa
+    array<T*> con capacidad 1.
+  end note
+
+  RAS -> BLK : ArrayStack()
+  activate BLK
+  BLK -> ARR : array<T*>(1)
+  activate ARR
+  ARR --> BLK : ok
+  deactivate ARR
+  BLK --> RAS : ok
+  deactivate BLK
+
+  RAS -> RAS : n = 0
+
+  RAS --> MAIN : objeto creado
+end
+
+group Uso normal
+  MAIN -> RAS : add(0, 10)
+  activate RAS
+  RAS -> SYS : new T[1]
+  SYS --> RAS : T* bloque 0
+  RAS -> BLK : add(0, ptr)
+  BLK -> ARR : a[0] = ptr
+  RAS -> RAS : n = 1
+  RAS --> MAIN : void
+  deactivate RAS
+
+  MAIN -> RAS : add(1, 20)
+  activate RAS
+  note right of RAS
+    Capacidad actual 1
+    n+1 = 2 > 1 → grow()
+  end note
+  RAS -> SYS : new T[2]
+  SYS --> RAS : T* bloque 1
+  RAS -> BLK : add(1, ptr)
+  RAS -> RAS : n = 2
+  RAS --> MAIN : void
+  deactivate RAS
+
+  note right of RAS
+    Estado:
+    n = 2
+    blocks = [ptr0, ptr1]
+    Bloques: [10], [20, ?]
+  end note
+end
+
+group Destrucción
+  MAIN -> RAS : ~RootishArrayStack()
+  activate RAS
+
+  note right of RAS
+    El objeto sale de su ámbito.
+    Comienza el destructor.
+  end note
+
+  RAS -> RAS : clear()
+  activate RAS
+
+  group Iteración 1
+    RAS -> BLK : remove(1)
+    activate BLK
+    BLK -> ARR : a[1]
+    ARR --> BLK : T* bloque 1
+    BLK --> RAS : T* bloque 1
+    deactivate BLK
+    RAS -> SYS : delete[] ptr_bloque1
+    SYS --> RAS : ok
+  end
+
+  group Iteración 2
+    RAS -> BLK : remove(0)
+    activate BLK
+    BLK -> ARR : a[0]
+    ARR --> BLK : T* bloque 0
+    BLK --> RAS : T* bloque 0
+    deactivate BLK
+    RAS -> SYS : delete[] ptr_bloque0
+    SYS --> RAS : ok
+  end
+
+  RAS -> RAS : n = 0
+  deactivate RAS
+
+  note right of RAS
+    Cuerpo del destructor
+    terminado. clear() liberó
+    todos los bloques.
+  end note
+
+  RAS -> BLK : ~ArrayStack()
+  activate BLK
+  BLK -> ARR : ~array<T*>()
+  activate ARR
+  note right of ARR
+    Libera el arreglo interno
+    de punteros con delete[].
+    Los bloques ya fueron
+    liberados en clear().
+  end note
+  ARR --> BLK : ok
+  deactivate ARR
+  BLK --> RAS : ok
+  deactivate BLK
+
+  RAS -> RAS : destruir n
+
+  deactivate RAS
+
+  note right of MAIN
+    Memoria totalmente liberada.
+    Sin fugas.
+  end note
+end
+
+@enduml
